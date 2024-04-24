@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+        .sidebar {
+            width: 250px;
+            background-color: #f1f1f1;
+            float: left;
+            height: 100%;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+        }
+
+        .charts-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .chart {
+            width: 45%;
+            height: 500px;
+        }
+    </style>
+  </head>
+  <body>
+
+
+    <div class="sidebar">
+      <?!=includeHeaderProf();?>
+</div>
+
+<div class="content">
+   
+    <form id="ReclamationForm">
+     
+<label for="firstInput">Select Sheet:</label><br>
+<select id="firstInput" name="firstInput"></select><br><br>
+
+</select><br><br>
+
+
+      <label for="commonProblems">Common Problems:</label><br>
+      <select id="commonProblems" name="commonProblems">
+        <option value="Erreurs de Saisie de Données">Erreurs de Saisie de Données</option>
+        <option value="Données Incomplètes">Données Incomplètes</option>
+        <option value="Formatage des Données">Formatage des Données</option>
+        <option value="Intégrité des Données">Intégrité des Données</option>
+        <option value="Défis de Communication">Défis de Communication</option>
+        <option value="Autre ...">Autre ...</option>
+      </select><br><br>
+
+      <label for="problemDescription">Problem Description:</label><br>
+      <textarea id="problemDescription" name="problemDescription" rows="4" cols="50"></textarea><br><br>
+
+      <label for="admin">Select Admin:</label><br>
+      <select id="admin" name="admin">
+        <!-- Admin options will be dynamically populated from Google Sheets -->
+      </select><br><br>
+
+      <input type="button" value="Submit" onclick="submitForm()">
+    </form>
+    </div >
+   
+    <script>
+      google.script.run.withSuccessHandler(function(adminNames) {
+        var selectAdmin = document.getElementById("admin");
+        for (var i = 0; i < adminNames.length; i++) {
+          var option = document.createElement("option");
+          option.text = adminNames[i];
+          option.value = adminNames[i];
+          selectAdmin.add(option);
+        }
+      }).getAdminNames();
+       google.script.run.withSuccessHandler(function(sheets) {
+    var selectSheet = document.getElementById("firstInput");
+    for (var i = 0; i < sheets.length; i++) {
+      var option = document.createElement("option");
+      option.text = sheets[i];
+      option.value = sheets[i];
+      selectSheet.add(option);
+    }
+  }).getSheetNames();
+      function submitForm() {
+        var form = document.getElementById("ReclamationForm");
+        google.script.run.sendReclamation(form);
+      }
+    </script>
+  </body>
+</html>

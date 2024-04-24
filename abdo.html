@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Classroom</title>
+    <base target="_top" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body>
+    <div class="sidebar mr-4">
+      <?!=includeHeaderAdmin();?>
+    </div>
+    <div>
+      <div class="container px-6">
+        <!-- Decreased px value -->
+        <h1 class="text-3xl font-bold text-center my-6">Create Classroom</h1>
+
+        <form id="create-course-form" class="max-w-sm mx-auto space-y-4">
+          <input
+            type="text"
+            name="courseName"
+            placeholder="Enter course name"
+            class="block w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+          />
+          <button
+            onclick="submitForm()"
+            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+            type="button"
+          >
+            Create Course
+          </button>
+        </form>
+
+        <div class="w-3/4 mx-auto mr-10">
+          <!-- Table content here -->
+
+          <table class="w-full mr-700 text-gray-500">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3">Id</th>
+                <th scope="col" class="px-6 py-3">Filiere Name</th>
+                <th scope="col" class="px-6 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody id="filiereBody" class="bg-white divide-y divide-gray-300">
+              <!-- Filiere data will be inserted here dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <script>
+        function submitForm() {
+          var courseName = document.getElementsByName("courseName")[0].value;
+          google.script.run
+            .withSuccessHandler(function (response) {
+              alert(response);
+            })
+            .createClassroom(courseName);
+        }
+
+        function loadFiliereData() {
+          google.script.run.withSuccessHandler(buildTable).getFiliereData();
+        }
+
+        function buildTable(data) {
+          var table = document.getElementById("filiereBody");
+          if (!data || data.length === 0) {
+            table.innerHTML =
+              "<tr><td colspan='3' class='px-6 py-4'>No data available.</td></tr>";
+            return;
+          }
+
+          table.innerHTML = ""; // Clear the table first
+          data.forEach(function (row) {
+            var htmlRow = `<tr>
+                         <td class="px-6 py-4 font-medium text-gray-900">${row[0]}</td>
+                         <td class="px-6 py-4">${row[1]}</td>
+                         <td class="px-6 py-4">
+                           <button onclick="postAnnouncement('${row[2]}','${row[1]}')" class="px-4 py-2 bg-blue-500 text-white rounded">Afficher</button>
+                         </td>
+                       </tr>`;
+            table.innerHTML += htmlRow;
+          });
+        }
+
+        function postAnnouncement(courseId, name) {
+          google.script.run
+            .withSuccessHandler(function (response) {
+              alert(response);
+            })
+            .affichageClassroom(courseId, name);
+        }
+
+        document.addEventListener("DOMContentLoaded", loadFiliereData);
+      </script>
+    </div>
+  </body>
+</html>

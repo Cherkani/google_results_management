@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Page Navigation</title>
+    <script>
+      function loadPage(pageName) {
+        fetch(pageName)
+          .then((response) => response.text())
+          .then((html) => {
+            document.getElementById("content").innerHTML = html;
+          })
+          .catch((error) => console.error("Error loading the page:", error));
+      }
+    </script>
+  </head>
+  <body>
+    <button onclick="loadPage('page1.html')">Load Page 1</button>
+    <button onclick="loadPage('page2.html')">Load Page 2</button>
+    <div id="content">
+      <!-- Content will be loaded dynamically here -->
+    </div>
+  </body>
+</html>

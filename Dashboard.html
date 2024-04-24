@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <title>Graphique à partir des données du tableur</title>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script type="text/javascript">
+      google.charts.load("current", { packages: ["corechart"] });
+      google.charts.setOnLoadCallback(drawChart);
+
+      function fetchData(selectedOption) {
+        if (selectedOption === "all") {
+          google.script.run
+            .withSuccessHandler(onDataReceived)
+            .getDataFromAllSheets();
+        } else {
+          google.script.run
+            .withSuccessHandler(onDataReceived)
+            .getDataFromSheet(selectedOption);
+        }
+
+        // Récupérer également les statistiques
+        google.script.run
+          .withSuccessHandler(updateStatistics)
+          .getStatistics(selectedOption);
+      }
+
+      function drawChart() {
+        // Charger les noms de feuille et remplir le menu déroulant
+        google.script.run
+          .withSuccessHandler(function (sheetNames) {
+            var select = document.getElementById("sheetSelector");
+            select.innerHTML = ""; // Effacer les options précédentes
+            var option = document.createElement("option");
+            option.text = "Voir toutes les données";
+            option.value = "all";
+            select.add(option);
+            sheetNames.forEach(function (sheetName) {
+              var option = document.createElement("option");
+              option.text = "Feuille : " + sheetName;
+              option.value = sheetName;
+              select.add(option);
+            });
+          })
+          .getSheetNames();
+
+        // Dessiner le graphique des statistiques
+        drawStatsChart();
+      }
+
+      function drawStatsChart() {
+        google.script.run
+          .withSuccessHandler(function (statsData) {
+            var data = new google.visualization.DataTable();
+            data.addColumn("string", "Statistique");
+            data.addColumn("number", "Valeur");
+
+            // Ajouter les données statistiques
+            data.addRow([
+              "Note la plus élevée",
+              parseFloat(statsData.highestMark),
+            ]);
+            data.addRow([
+              "Note la plus basse",
+              parseFloat(statsData.lowestMark),
+            ]);
+            data.addRow(["Note moyenne", parseFloat(statsData.meanMark)]);
+
+            var options = {
+              title: "Statistiques",
+              legend: { position: "none" },
+              bars: "horizontal",
+            };
+
+            var chart = new google.visualization.BarChart(
+              document.getElementById("stats_chart_div")
+            );
+            chart.draw(data, options);
+          })
+          .getStatistics();
+      }
+
+      function onDataReceived(jsonData) {
+        console.log("Données reçues : ", jsonData); // Journaliser la chaîne JSON reçue
+        var data = JSON.parse(jsonData); // Analyser la chaîne JSON pour la convertir en tableau
+        if (data && data.length > 0) {
+          var passCount = 0;
+          var failCount = 0;
+
+          // Commencer la boucle à partir de l'index 1 pour ignorer la ligne d'en-tête
+          for (var i = 1; i < data.length; i++) {
+            // Vérifier si la valeur dans la colonne H est "V" (réussi) ou "RAT" (échoué)
+            if (data[i][7] === "V") {
+              passCount++;
+            } else if (data[i][7] === "RAT") {
+              failCount++;
+            }
+          }
+
+          // Créer une table de données pour le graphique en secteurs
+          var pieData = new google.visualization.DataTable();
+          pieData.addColumn("string", "Résultat");
+          pieData.addColumn("number", "Nombre");
+          pieData.addRow(["Validantion", passCount]);
+          pieData.addRow(["Échec", failCount]);
+
+          var pieOptions = {
+            title: "Pourcentage de réussite/échec",
+            is3D: true,
+          };
+
+          var pieChart = new google.visualization.PieChart(
+            document.getElementById("pie_chart_div")
+          );
+          pieChart.draw(pieData, pieOptions);
+
+          // Poursuivre avec le dessin du graphique en colonnes pour les scores si nécessaire
+          var chartData = new google.visualization.DataTable();
+          chartData.addColumn("string", "Nom de l'étudiant");
+          chartData.addColumn("number", "Score");
+
+          // Commencer la boucle à partir de l'index 1 pour ignorer la ligne d'en-tête
+          for (var j = 1; j < data.length; j++) {
+            var studentName = data[j][1] + " " + data[j][2]; // Concaténer le prénom et le nom de famille
+            var score = parseFloat(data[j][4]); // Convertir le score en nombre
+            chartData.addRow([studentName, score]);
+          }
+
+          var options = {
+            title: "Scores des étudiants",
+            legend: { position: "none" },
+          };
+
+          var chart = new google.visualization.ColumnChart(
+            document.getElementById("chart_div")
+          );
+          chart.draw(chartData, options);
+        } else {
+          console.log("Aucune donnée disponible.");
+          document.getElementById("chart_div").innerHTML =
+            "Aucune donnée disponible.";
+        }
+      }
+
+      function updateStatistics(stats) {
+        document.getElementById("statistics").innerHTML = stats;
+      }
+    </script>
+    <style>
+      .sidebar {
+        width: 250px;
+        background-color: #f1f1f1;
+        float: left;
+        height: 100%;
+      }
+
+      .content {
+        margin-left: 250px;
+        padding: 20px;
+      }
+
+      .charts-container {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .chart {
+        width: 45%;
+        height: 350px;
+      }
+      .chartbig {
+        width: 100%;
+        height: 500px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar">
+      <?!=includeHeaderProf();?>
+    </div>
+
+    <div class="content">
+      <div>
+        <label for="sheetSelector" class="form-label"
+          >Sélectionner la feuille :</label
+        >
+        <select
+          id="sheetSelector"
+          class="form-select"
+          onchange="fetchData(this.value)"
+        >
+          <option value="all">Voir toutes les données</option>
+        </select>
+      </div>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <div class="charts-container">
+        <div id="pie_chart_div" class="chart"></div>
+        <div id="stats_chart_div" class="chart"></div>
+      </div>
+      <div id="chart_div" class="chartbig"></div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <base target="_top">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+    integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      background-color: rgba(58, 103, 177, 30%);
+    }
+
+    .mycolor {
+      background-color: #3a67b1;
+    }
+
+    .color {
+      color: #3a67b1;
+    }
+
+    /* Added CSS for sidebar */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 250px; /* Adjust the width as needed */
+      padding-top: 4rem; /* Adjust the top padding to accommodate the navbar */
+      background-color: #3a67b1; /* Sidebar background color */
+      color: white; /* Text color */
+    }
+
+    .sidebar-nav-item {
+      padding: 8px 20px;
+    }
+
+    .sidebar-nav-item:hover {
+      background-color: rgba(255, 255, 255, 0.2); /* Hover background color */
+    }
+
+    /* Added CSS for logout button */
+    .logout-btn {
+      width: 100%; /* Make button full width */
+      border: none;
+      border-radius: 0;
+      text-align: left;
+    }
+  </style>
+
+
+
+
+<script>
+  // Function to retrieve user, password, and role information
+  function getUserInfo() {
+    google.script.run.withSuccessHandler(populateUserInfo).getUserInfo();
+  }
+
+  // Function to populate user, password, and role information in the HTML
+  function populateUserInfo(userInfo) {
+    var user = userInfo.user;
+    var password = userInfo.password;
+    var role = userInfo.role; // Adding role information
+
+    document.getElementById("user").innerText = user;
+   //  document.getElementById("password").innerText = "*******"; 
+    document.getElementById("role").innerText = role; // Displaying the role
+  }
+
+  // Function to logout
+  function logout() {
+    google.script.run.logoutUser();
+    document.getElementById('myid').click();
+  }
+</script>
+ 
+</head>
+
+</head>
+
+<body onload="getUserInfo()"> <!-- Call getUserInfo() when the page loads -->
+  <div class="sidebar">
+    <p>User: <span id="user"></span></p>
+   
+   <p > <span id="password"></span></p>
+<p>Role: <span id="role"></span></p>
+
+    
+      
+    <h3 class="text-white px-3">Ensaj Notes</h3>
+    <ul class="nav flex-column mb-0">
+      <li class="nav-item sidebar-nav-item">
+        <a class="nav-link active text-white" href="<?= myURL(); ?>">
+          <i class="bi bi-journal-text"></i> Notes
+        </a>
+      </li>
+      <li class="nav-item sidebar-nav-item">
+        <a class="nav-link text-white" href="<?= myURL(); ?>?page=mypage1">
+          <i class="bi bi-check-square"></i> Validation
+        </a>
+      </li>
+      
+    </ul>
+    
+     <button class="btn mt-auto px-3 py-2 text-white logout-btn" type="button" onclick="logout()"><p style="color: red;"><i class="bi bi-box-arrow-right"></i> Log Out</p></button>
+  <a style="display:none" id="myid" href="<?= myURL(); ?>" target="_top">Link</a>
+  </div>
+
+  <!-- Content -->
+  <div class="container-fluid">
+    <!-- Your main content here -->
+  </div>
+
+</body>
+
+
+</html>
